@@ -1,33 +1,28 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 
-// ===== Configuracao do Wi-Fi e servidor local =====
-const char* WIFI_SSID = "Pimentel";
-const char* WIFI_PASSWORD = "pimentell";
+const char* nomeDaRede = "NOME_DO_WIFI";
+const char* senhaDaRede = "SENHA_DO_WIFI";
 
-// Use o IP do computador que esta rodando o Node.js.
-// Exemplo no Windows: ipconfig -> Adaptador Wi-Fi -> Endereco IPv4.
-const char* SERVER_URL = "http://192.168.0.100:3000/api/readings";
-const char* DEVICE_ID = "esp32-hall-01";
+const char* enderecoServidor = "http://192.168.0.100:3000/api/readings";
+const char* nomeDoDispositivo = "esp32-hall-01";
 
-// ===== Configuracao do sensor Hall KY-003 =====
-const int HALL_PIN = 27;
-const int PULSES_PER_REVOLUTION = 1;
+const int pinoSensorHall = 27;
+const int pulsosPorVolta = 1;
 
-// Informe o diametro da roda/eixo caso queira estimar velocidade linear.
-const float WHEEL_DIAMETER_METERS = 0.065;
-const unsigned long SAMPLE_INTERVAL_MS = 1000;
+const float diametroDaRodaEmMetros = 0.065;
+const unsigned long intervaloDeLeitura = 1000;
 
-volatile unsigned long pulseCount = 0;
-unsigned long lastSampleTime = 0;
+volatile unsigned long totalDePulsos = 0;
+unsigned long tempoDaUltimaLeitura = 0;
 
-void IRAM_ATTR countPulse() {
-  pulseCount++;
+void IRAM_ATTR contarPulso() {
+  totalDePulsos++;
 }
 
-void connectWiFi() {
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  Serial.print("Conectando ao Wi-Fi");
+void conectarNoWifi() {
+  WiFi.begin(nomeDaRede, senhaDaRede);
+  Serial.print("Conectando no Wi-Fi");
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -35,74 +30,76 @@ void connectWiFi() {
   }
 
   Serial.println();
-  Serial.print("Wi-Fi conectado. IP do ESP32: ");
+  Serial.print("ESP32 conectado. IP: ");
   Serial.println(WiFi.localIP());
 }
 
-float calculateRpm(unsigned long pulses, float elapsedSeconds) {
-  if (elapsedSeconds <= 0) {
+float calcularRpm(unsigned long pulsos, float segundos) {
+  if (segundos <= 0) {
     return 0;
   }
 
-  float revolutions = pulses / (float)PULSES_PER_REVOLUTION;
-  return (revolutions / elapsedSeconds) * 60.0;
+  float voltas = pulsos / (float)pulsosPorVolta;
+  return (voltas / segundos) * 60.0;
 }
 
-float calculateSpeedKmh(float rpm) {
-  float circumferenceMeters = PI * WHEEL_DIAMETER_METERS;
-  float metersPerMinute = rpm * circumferenceMeters;
-  return metersPerMinute * 60.0 / 1000.0;
+float calcularVelocidadeEmKmh(float rpm) {
+  float circunferenciaDaRoda = PI * diametroDaRodaEmMetros;
+  float metrosPorMinuto = rpm * circunferenciaDaRoda;
+
+  return metrosPorMinuto * 60.0 / 1000.0;
 }
 
-void sendReading(float rpm, float speedKmh, unsigned long pulses) {
+void enviarDados(float rpm, float velocidadeEmKmh, unsigned long pulsos) {
   if (WiFi.status() != WL_CONNECTED) {
-    connectWiFi();
+    conectarNoWifi();
   }
 
-  HTTPClient http;
-  http.begin(SERVER_URL);
-  http.addHeader("Content-Type", "application/json");
+  HTTPClient requisicao;
+  requisicao.begin(enderecoServidor);
+  requisicao.addHeader("Content-Type", "application/json");
 
-  String payload = "{";
-  payload += "\"device_id\":\"" + String(DEVICE_ID) + "\",";
-  payload += "\"rpm\":" + String(rpm, 2) + ",";
-  payload += "\"speed_kmh\":" + String(speedKmh, 2) + ",";
-  payload += "\"pulses\":" + String(pulses);
-  payload += "}";
+  String dados = "{";
+  dados += "\"id_dispositivo\":\"" + String(nomeDoDispositivo) + "\",";
+  dados += "\"rpm\":" + String(rpm, 2) + ",";
+  dados += "\"velocidade_kmh\":" + String(velocidadeEmKmh, 2) + ",";
+  dados += "\"pulsos\":" + String(pulsos);
+  dados += "}";
 
-  int statusCode = http.POST(payload);
+  int respostaDoServidor = requisicao.POST(dados);
 
-  Serial.print("Enviado: ");
-  Serial.print(payload);
-  Serial.print(" | HTTP ");
-  Serial.println(statusCode);
+  Serial.print("Dados enviados: ");
+  Serial.print(dados);
+  Serial.print(" | resposta: ");
+  Serial.println(respostaDoServidor);
 
-  http.end();
+  requisicao.end();
 }
 
 void setup() {
   Serial.begin(115200);
-  pinMode(HALL_PIN, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(HALL_PIN), countPulse, FALLING);
 
-  connectWiFi();
-  lastSampleTime = millis();
+  pinMode(pinoSensorHall, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(pinoSensorHall), contarPulso, FALLING);
+
+  conectarNoWifi();
+  tempoDaUltimaLeitura = millis();
 }
 
 void loop() {
-  unsigned long now = millis();
+  unsigned long tempoAtual = millis();
 
-  if (now - lastSampleTime >= SAMPLE_INTERVAL_MS) {
+  if (tempoAtual - tempoDaUltimaLeitura >= intervaloDeLeitura) {
     noInterrupts();
-    unsigned long pulses = pulseCount;
-    pulseCount = 0;
+    unsigned long pulsosMedidos = totalDePulsos;
+    totalDePulsos = 0;
     interrupts();
 
-    float elapsedSeconds = (now - lastSampleTime) / 1000.0;
-    float rpm = calculateRpm(pulses, elapsedSeconds);
-    float speedKmh = calculateSpeedKmh(rpm);
+    float segundosPassados = (tempoAtual - tempoDaUltimaLeitura) / 1000.0;
+    float rpm = calcularRpm(pulsosMedidos, segundosPassados);
+    float velocidadeEmKmh = calcularVelocidadeEmKmh(rpm);
 
-    sendReading(rpm, speedKmh, pulses);
-    lastSampleTime = now;
+    enviarDados(rpm, velocidadeEmKmh, pulsosMedidos);
+    tempoDaUltimaLeitura = tempoAtual;
   }
 }

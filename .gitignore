@@ -1,0 +1,23 @@
+# Dependencias do Node
+node_modules/
+
+# Variaveis de ambiente e chaves
+.env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Arquivos temporarios do sistema/editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Build/cache de hospedagem
+.vercel/
+dist/
+build/

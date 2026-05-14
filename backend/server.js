@@ -38,10 +38,10 @@ function toNumber(value, fallback = 0) {
 
 function normalizeReading(body) {
   return {
-    device_id: String(body.device_id || DEFAULT_DEVICE_ID),
+    device_id: String(body.device_id || body.id_dispositivo || DEFAULT_DEVICE_ID),
     rpm: toNumber(body.rpm),
-    speed_kmh: toNumber(body.speed_kmh),
-    pulses: Math.max(0, Math.trunc(toNumber(body.pulses))),
+    speed_kmh: toNumber(body.speed_kmh || body.velocidade_kmh),
+    pulses: Math.max(0, Math.trunc(toNumber(body.pulses || body.pulsos))),
     created_at: new Date().toISOString()
   };
 }
