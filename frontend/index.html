@@ -6,15 +6,17 @@
   <title>Velocimetro Hall ESP32</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="city-glow"></div>
+
   <main class="dashboard">
     <section class="hero">
       <div>
-        <p class="eyebrow">ESP32 + KY-003</p>
-        <h1>Monitoramento Hall em tempo real</h1>
+        <p class="eyebrow">ESP32 // sensor hall KY-003</p>
+        <h1>Conta-giros em tempo real</h1>
       </div>
 
       <div id="connectionStatus" class="status offline">
@@ -30,24 +32,28 @@
     </section>
 
     <section class="panel">
-      <div class="gauge" aria-label="Velocimetro em tempo real">
-        <div class="gauge-ring">
+      <div class="gauge" aria-label="Conta-giros em tempo real">
+        <div class="tachometer">
+          <div class="scale" id="rpmScale"></div>
+          <div class="danger-zone"></div>
+          <div class="inner-glass"></div>
           <div id="needle" class="needle"></div>
           <div class="hub"></div>
-          <div class="gauge-readout">
-            <strong id="speedValue">0.0</strong>
-            <span>km/h</span>
+          <div class="center-readout">
+            <span>RPM x1000</span>
+            <strong id="rpmValue">0.0</strong>
+            <small id="gearLabel">HALL</small>
           </div>
         </div>
       </div>
 
       <div class="metrics">
-        <article>
-          <span>RPM</span>
-          <strong id="rpmValue">0</strong>
+        <article class="speed-card">
+          <span>Velocidade</span>
+          <strong><span id="speedValue">0.0</span> km/h</strong>
         </article>
         <article>
-          <span>Pulsos/s</span>
+          <span>Pulsos na leitura</span>
           <strong id="pulseValue">0</strong>
         </article>
         <article>

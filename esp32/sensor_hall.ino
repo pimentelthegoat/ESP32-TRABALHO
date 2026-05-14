@@ -4,7 +4,7 @@
 const char* nomeDaRede = "NOME_DO_WIFI";
 const char* senhaDaRede = "SENHA_DO_WIFI";
 
-const char* enderecoServidor = "http://192.168.0.100:3000/api/readings";
+const char* enderecoServidor = "http://10.68.52.11:3000/api/readings";
 const char* nomeDoDispositivo = "esp32-hall-01";
 
 const int pinoSensorHall = 27;
