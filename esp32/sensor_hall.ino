@@ -1,13 +1,13 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 
-const char* nomeDaRede = "NOME_DO_WIFI";
-const char* senhaDaRede = "SENHA_DO_WIFI";
+const char* nomeDaRede = "Alexandre";
+const char* senhaDaRede = "xawc8090";
 
 const char* enderecoServidor = "http://10.68.52.11:3000/api/readings";
 const char* nomeDoDispositivo = "esp32-hall-01";
 
-const int pinoSensorHall = 27;
+const int pinoSensorHall = 4;
 const int pulsosPorVolta = 1;
 
 const float diametroDaRodaEmMetros = 0.065;
