@@ -32,8 +32,6 @@ PROJETO ESP32/
 |   |-- app.js
 |   |-- vercel.json
 |   `-- README.md
-|-- esp32/
-|   `-- sensor_hall.ino
 `-- README.MD
 ```
 
@@ -41,7 +39,7 @@ A pasta `frontend/` e a parte visual do projeto e pode ser enviada para a Vercel
 
 A pasta `backend/` e o servidor local, que deve rodar no computador.
 
-A pasta `esp32/` tem o codigo que vai para a placa ESP32 pela Arduino IDE.
+O codigo da placa ESP32 fica separado do projeto web e deve ser colado direto na Arduino IDE.
 
 ## Materiais usados
 
@@ -66,7 +64,7 @@ GND    ->   GND
 S      ->   GPIO 27
 ```
 
-No codigo do ESP32, o pino usado para leitura do sensor e o `GPIO 27`. Se quiser usar outro pino, basta alterar a constante `HALL_PIN` no arquivo `esp32/sensor_hall.ino`.
+No codigo do ESP32, o pino usado para leitura do sensor e o `GPIO 27`. Se quiser usar outro pino, basta alterar essa parte diretamente no codigo aberto na Arduino IDE.
 
 ## Configuracao do Supabase
 
@@ -167,15 +165,11 @@ Isso funciona quando o site da Vercel e aberto no mesmo computador onde o backen
 
 Se abrir o site pelo celular, por exemplo, `localhost` vai apontar para o proprio celular, nao para o computador. Nesse caso, seria necessario usar o IP do computador na rede ou algum tunel como ngrok.
 
-## Codigo do ESP32
+## Codigo do ESP32 na Arduino IDE
 
-O arquivo do ESP32 esta em:
+O codigo do ESP32 nao fica mais dentro das pastas do projeto. Ele deve ser aberto ou colado direto na Arduino IDE.
 
-```text
-esp32/sensor_hall.ino
-```
-
-Antes de enviar para a placa, e necessario alterar:
+Antes de enviar para a placa, e necessario alterar estas informacoes no codigo:
 
 ```cpp
 const char* WIFI_SSID = "SEU_WIFI";
@@ -193,7 +187,7 @@ Procure pelo endereco IPv4 da sua rede Wi-Fi.
 
 ## Ajustes importantes no calculo
 
-No codigo do ESP32 existem alguns valores que podem ser ajustados:
+No codigo usado na Arduino IDE existem alguns valores que podem ser ajustados:
 
 ```cpp
 const int PULSES_PER_REVOLUTION = 1;
@@ -243,6 +237,6 @@ Mesmo sendo um projeto simples, ele ja deixa uma base pronta para melhorias futu
 
 ## Conclusao
 
-O projeto cumpriu a proposta de criar um velocimetro educativo usando ESP32 e sensor Hall KY-003. A estrutura ficou separada em frontend, backend e codigo embarcado, facilitando a manutencao e a explicacao do funcionamento.
+O projeto cumpriu a proposta de criar um velocimetro educativo usando ESP32 e sensor Hall KY-003. A estrutura ficou separada entre frontend, backend e codigo da placa usado diretamente na Arduino IDE, facilitando a manutencao e a explicacao do funcionamento.
 
 A ideia principal foi mostrar, de forma pratica, como dados fisicos podem ser capturados por um sensor, processados por um microcontrolador, enviados para um servidor e exibidos em tempo real em uma interface web moderna.

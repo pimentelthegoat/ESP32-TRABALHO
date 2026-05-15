@@ -29,6 +29,10 @@ let latestReading = {
 };
 
 app.use(cors({ origin: FRONTEND_ORIGIN === '*' ? true : FRONTEND_ORIGIN }));
+app.use((_req, res, next) => {
+  res.setHeader('Access-Control-Allow-Private-Network', 'true');
+  next();
+});
 app.use(express.json({ limit: '32kb' }));
 
 function toNumber(value, fallback = 0) {
@@ -59,7 +63,7 @@ function broadcastReading(reading) {
 async function saveReading(reading) {
   if (!supabase) {
     console.warn('Supabase nao configurado. Leitura mantida apenas em memoria.');
-    return;
+    return false;
   }
 
   const { error } = await supabase.from('leituras').insert({
@@ -72,7 +76,10 @@ async function saveReading(reading) {
 
   if (error) {
     console.error('Erro ao salvar no Supabase:', error.message);
+    return false;
   }
+
+  return true;
 }
 
 app.get('/', (_req, res) => {
@@ -100,9 +107,9 @@ app.post('/api/readings', async (req, res) => {
 
   latestReading = reading;
   broadcastReading(reading);
-  await saveReading(reading);
+  const savedOnSupabase = await saveReading(reading);
 
-  res.status(201).json({ ok: true, data: reading });
+  res.status(201).json({ ok: true, salvo_supabase: savedOnSupabase, data: reading });
 });
 
 wss.on('connection', (socket) => {
